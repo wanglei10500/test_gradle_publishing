@@ -1,0 +1,86 @@
+group 'com.sensetime'
+version '1.2.0'
+def artifactId = "ad-mgt-api"
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+buildDir = 'build'
+defaultTasks 'build'
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+artifacts {
+    archives sourcesJar
+}
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+    test {
+    	java {
+            srcDir 'src/test/java'
+        }
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url "http://host:8081/nexus/content/groups/public" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "http://repo.springsource.org/libs-snapshot" }
+  	maven { url "http://repo.springsource.org/plugins-release" }
+    mavenCentral()
+}
+
+dependencies {
+
+    // dubbox
+    compile group: 'com.alibaba', name: 'dubbo', version: '2.8.4'
+    compile group: 'com.alibaba', name: 'dubbo-rpc-rest', version: '2.8.4'
+    compile group: 'org.jboss.resteasy', name: 'resteasy-jaxrs', version: '3.0.16.Final'
+    compile group: 'javax.validation', name: 'validation-api', version: '1.0.0.GA'
+    compile group: 'org.hibernate', name: 'hibernate-validator', version: '5.2.4.Final'
+
+    //compile fileTree(dir: 'libs', include: ['*.jar'])
+
+	// testCompile group: 'org.springframework', name: 'spring-test', version: '4.2.2.RELEASE'
+
+}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://host:8081/nexus/content/repositories/releases") {
+                authentication(userName: "admin", password: "admin123")
+            }
+            pom.version = "$project.version"
+            pom.artifactId = "$artifactId"
+            pom.groupId = "$project.group"
+        }
+    }
+}
+tasks.withType(JavaCompile) {
+	// options.compilerArgs = ["-Xlint:unchecked"];
+    options.encoding = "UTF-8"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.9'
+}
+
+task copyJars(type: Copy) {
+    from configurations.runtime into 'out/artifacts/webapp/WEB-INF/lib/' // 目标位置
+}
