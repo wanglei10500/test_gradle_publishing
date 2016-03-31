@@ -1,0 +1,52 @@
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+group = "com.sensetime.test"
+version = "0.1.0"
+
+defaultTasks 'clean', 'jar'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
+    repositories {
+        maven {
+            url "http://host/nexus/content/repositories/releases/"
+            credentials {
+                username 'admin'
+                password 'admin123'
+            }
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "http://host/nexus/content/groups/public/" }
+}
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter', version: '1.1.4.RELEASE'
+
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.0'
+} 
